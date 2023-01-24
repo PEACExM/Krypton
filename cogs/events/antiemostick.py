@@ -6,7 +6,7 @@ import sys
 import setuptools
 from itertools import cycle
 import threading
-from core import Cog, Darkz
+from core import Cog, Astroz
 import datetime
 import logging
 import time
@@ -28,10 +28,10 @@ proxs = cycle(proxies)
 proxies={"http": 'http://' + next(proxs)}
 
 class antiemostick(Cog):
-    def __init__(self, client: Darkz):
+    def __init__(self, client: Astroz):
         self.client = client      
-        self.headers = {"Authorization": f"Bot ODUyOTE5NDIzMDE4NTk4NDMw.GoxHP1.xHwxbepouv5-7IJbvyL5Espvi6j_JOMvwMm1mY"}
-        print("Cog Loaded: Antiemostick")
+        self.headers = {"Authorization": f"Bot MTAxMjYyNzA4ODIzMjE2NTM3Ng.G6fWNZ.oyQgaKEVU8T_zZ0Vk_Zj95QHQ4hVwqCgbBOFK4"}
+
     @commands.Cog.listener()
     async def on_guild_emojis_update(self, guild, before, after) -> None:
       try:
@@ -39,17 +39,20 @@ class antiemostick(Cog):
         anti = getanti(guild.id)
         punishment = data["punishment"]
         wled = data["whitelisted"]
+        wlrole = data['wlrole']  
+        wlroles = guild.get_role(wlrole)
         reason = "Creating Emojis | Not Whitelisted"
         async for entry in guild.audit_logs(
                 limit=1):
             user = entry.user.id
+            hacker = guild.get_member(entry.user.id)
             emoji = await guild.fetch_emoji(entry.target.id)
         api = random.randint(8,9)
-        if user == 852919423018598430:
+        if user == 1012627088232165376:
           pass
         elif entry.user == guild.owner:
           pass
-        elif str(entry.user.id) in wled or anti == "off":
+        elif str(entry.user.id) in wled or anti == "off" or wlroles in hacker.roles:
             pass
         else:
          if entry.action == discord.AuditLogAction.emoji_create:

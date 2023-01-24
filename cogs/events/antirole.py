@@ -10,7 +10,7 @@ import datetime
 import logging
 import time
 import asyncio
-from core import Darkz, Cog
+from core import Astroz, Cog
 import aiohttp
 import tasksio
 from discord.ext import tasks
@@ -28,10 +28,22 @@ proxs = cycle(proxies)
 proxies={"http": 'http://' + next(proxs)}
 
 class antirole(Cog):
-    def __init__(self, client: Darkz):
+    def __init__(self, client: Astroz):
         self.client = client      
-        self.headers = {"Authorization": f"Bot ODUyOTE5NDIzMDE4NTk4NDMw.GoxHP1.xHwxbepouv5-7IJbvyL5Espvi6j_JOMvwMm1mY"}
-        print("Cog Loaded: Antirole")
+        self.headers = {"Authorization": f"Bot MTAxMjYyNzA4ODIzMjE2NTM3Ng.G6fWNZ.oyQgaKEVU8T_zZ0Vk_Zj95QHQ4hVwqCgbBOFK4"}
+        self.processing = [
+            
+        ]
+
+    @tasks.loop(seconds=15)
+    async def clean_processing(self):
+        self.processing.clear()
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.clean_processing.start()
+
+        
     @commands.Cog.listener()
     async def on_guild_role_create(self, role) -> None:
         try:
@@ -39,14 +51,17 @@ class antirole(Cog):
           data = getConfig(role.guild.id)
           punishment = data["punishment"]
           wled = data["whitelisted"]
+          wlrole = data['wlrole']  
           guild = role.guild
+          wlroles = guild.get_role(wlrole)
           reason = "Creating Roles | Not Whitelisted"
           async for entry in guild.audit_logs(
                 limit=2,
                 after=datetime.datetime.utcnow() - datetime.timedelta(seconds=30)):
             user = entry.user.id
+            hacker = guild.get_member(entry.user.id)
           api = random.randint(8,9)
-          if entry.user.id == self.client.user.id or entry.user.id == guild.owner_id or str(entry.user.id) in wled or anti == "off":
+          if entry.user.id == self.client.user.id or entry.user.id == guild.owner_id or str(entry.user.id) in wled or anti == "off" or wlroles in hacker.roles:
             return
           else:
            if entry.action == discord.AuditLogAction.role_create:
@@ -78,15 +93,18 @@ class antirole(Cog):
           data = getConfig(role.guild.id)
           punishment = data["punishment"]
           wled = data["whitelisted"]
+          wlrole = data['wlrole']
           guild = role.guild
+          hacker = guild.get_member(entry.user.id)
+          wlroles = guild.get_role(wlrole)
           reason = "Deleting Roles | Not Whitelisted"
           async for entry in guild.audit_logs(
                 limit=2,
                 after=datetime.datetime.utcnow() - datetime.timedelta(seconds=30)):
             user = entry.user.id
           api = random.randint(8,9)
-          if entry.user.id == self.client.user.id or entry.user.id == guild.owner_id or str(entry.user.id) in wled or anti == "off":
-            return
+          if entry.user.id == self.client.user.id or entry.user.id == guild.owner_id or str(entry.user.id) in wled or anti == "off" or wlroles in hacker.roles:
+            return          
           else:
             if entry.action == discord.AuditLogAction.role_delete:
               async with aiohttp.ClientSession(headers=self.headers) as session:
@@ -129,14 +147,17 @@ class antirole(Cog):
         anti = getanti(before.guild.id)
         punishment = data["punishment"]
         wled = data["whitelisted"]
+        wlrole = data['wlrole']
         guild = after.guild
+        hacker = guild.get_member(entry.user.id)
+        wlroles = guild.get_role(wlrole)
         reason = "Updating Roles | Not Whitelisted"
         async for entry in guild.audit_logs(
                 limit=1):
           user = entry.user.id
         api = random.randint(8,9)
-        if entry.user.id == self.client.user.id or entry.user.id == guild.owner_id or str(entry.user.id) in wled or anti == "off":
-            return
+        if entry.user.id == self.client.user.id or entry.user.id == guild.owner_id or str(entry.user.id) in wled or anti == "off" or wlroles in hacker.roles: 
+            return                  
         else:
          if entry.action == discord.AuditLogAction.role_update:
           async with aiohttp.ClientSession(headers=self.headers) as session:

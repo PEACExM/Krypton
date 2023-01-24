@@ -6,7 +6,7 @@ import sys
 import setuptools
 from itertools import cycle
 import threading
-from core import Darkz, Cog
+from core import Astroz, Cog
 import datetime
 import logging
 import time
@@ -28,10 +28,23 @@ proxs = cycle(proxies)
 proxies={"http": 'http://' + next(proxs)}
 
 class antichannel(Cog):
-    def __init__(self, client: Darkz):
+    def __init__(self, client: Astroz):
         self.client = client      
-        self.headers = {"Authorization": f"Bot ODUyOTE5NDIzMDE4NTk4NDMw.GoxHP1.xHwxbepouv5-7IJbvyL5Espvi6j_JOMvwMm1mY"}
-        print("Cog Loaded: AntiChannel")
+        self.headers = {"Authorization": f"Bot MTAxMjYyNzA4ODIzMjE2NTM3Ng.G6fWNZ.oyQgaKEVU8T_zZ0Vk_Zj95QHQ4hVwqCgbBOFK4"}
+        self.processing = [
+            
+        ]
+
+    @tasks.loop(seconds=15)
+    async def clean_processing(self):
+        self.processing.clear()
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.clean_processing.start()
+
+
+        
     async def delete(channel: discord.abc.GuildChannel):
       try:
         await channel.delete()
@@ -46,14 +59,17 @@ class antichannel(Cog):
           data = getConfig(channel.guild.id)
           anti = getanti(channel.guild.id)
           punishment = data["punishment"]
+          wlrole = data['wlrole']
           wled = data["whitelisted"]
           guild = channel.guild
+          wlroles = guild.get_role(wlrole)
           reason = "Channel Created | Not Whitelisted"
           async for entry in guild.audit_logs(
                 limit=1):
             user = entry.user.id
+            hacker = guild.get_member(entry.user.id)
           api = random.randint(8,9)
-          if entry.user.id == self.client.user.id or entry.user.id == guild.owner_id or str(entry.user.id) in wled or anti == "off":
+          if entry.user.id == self.client.user.id or entry.user.id == guild.owner_id or str(entry.user.id) in wled or anti == "off" or wlroles in hacker.roles:
             return
           else:
            if entry.action == discord.AuditLogAction.channel_create:
@@ -87,19 +103,22 @@ class antichannel(Cog):
         try:
           data = getConfig(channel.guild.id)
           anti = getanti(channel.guild.id)
+          wlrole = data['wlrole']  
           punishment = data["punishment"]
           wled = data["whitelisted"]
           guild = channel.guild
+          hacker = guild.get_member(entry.user.id)
+          wlroles = guild.get_role(wlrole)
           reason = "Channel Deleted | Not Whitelisted"
           async for entry in guild.audit_logs(
                 limit=1):
             user = entry.user.id
           api = random.randint(8,9)
-          if entry.user.id == 852919423018598430:
+          if entry.user.id == 1012627088232165376:
             return
           elif entry.user == guild.owner:
             pass
-          elif str(entry.user.id) in wled or anti == "off":
+          elif str(entry.user.id) in wled or anti == "off" or wlroles in hacker.roles:
             pass
           else:
            if entry.action == discord.AuditLogAction.channel_delete:
@@ -131,9 +150,12 @@ class antichannel(Cog):
       try:
         data = getConfig(before.guild.id)
         anti = getanti(before.guild.id)
+        wlrole = data['wlrole']  
         punishment = data["punishment"]
         wled = data["whitelisted"]
         guild = after.guild
+        hacker = guild.get_member(entry.user.id)
+        wlroles = guild.get_role(wlrole)
         reason = "Channel Updated | Not Whitelisted"
         async for entry in guild.audit_logs(
                 limit=1,
@@ -144,7 +166,7 @@ class antichannel(Cog):
           pass
         elif entry.user == guild.owner:
           pass
-        elif str(entry.user.id) in wled or anti == "off":
+        elif str(entry.user.id) in wled or anti == "off" or wlroles in hacker.roles:
             pass
         else:
          if entry.action == discord.AuditLogAction.channel_update or entry.action == discord.AuditLogAction.overwrite_update:

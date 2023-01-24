@@ -1,83 +1,189 @@
 from discord.ext import commands
-from core import Darkz, Cog
+from core import Astroz, Cog
 import discord, requests
 import json
 from utils.Tools import *
 from discord.ui import View, Button
+import logging
 
-bled = [110373943822540800, 
-        997499786380972122, 
-       9953967096805593128]
-
+logging.basicConfig(
+    level=logging.INFO,
+    format="\x1b[38;5;197m[\x1b[0m%(asctime)s\x1b[38;5;197m]\x1b[0m -> \x1b[38;5;197m%(message)s\x1b[0m",
+    datefmt="%H:%M:%S",
+)
 class Guild(Cog):
-  def __init__(self, client: Darkz):
+  def __init__(self, client: Astroz):
     self.client = client
 
+
+  
+
   @commands.Cog.listener(name="on_guild_join")
-  async def ffoo(self, guild):
-    embed = discord.Embed(title="Darkz | New Server", color=000000)
-    embed.add_field(name="Name", value=str(guild.name), inline=False)
+  async def hacker(self, guild):
     rope = [inv for inv in await guild.invites() if inv.max_age == 0 and inv.max_uses == 0]
-    me = self.client.get_channel(921742943931473970)
-    embed.add_field(name="Member Count", value=f"{guild.member_count} Member(s)", inline=False)
-    embed.add_field(name="Owner", value=f"[{guild.owner}](https://discord.com/users/{guild.owner_id})", inline=False)
-    embed.add_field(name="Invite", value=f"[here]({rope[0]})" if rope else "No Pre-Made Invite Found", inline=False)
-    await me.send(embed=embed)
+    me = self.client.get_channel(1046389928461873152)
+    channels = len(set(self.client.get_all_channels()))
+    embed = discord.Embed(title=f"{guild.name}'s Information",color=0x2f3136
+        ).set_author(
+            name="Guild Joined",
+            icon_url=guild.me.display_avatar.url if guild.icon is None else guild.icon.url
+        ).set_footer(text=f"{guild.name}",icon_url=guild.me.display_avatar.url if guild.icon is None else guild.icon.url)
+    embed.add_field(
+            name="**__About__**",
+            value=f"**Name : ** {guild.name}\n**ID :** {guild.id}\n**Owner <:Owner:1048556915963203684> :** {guild.owner} (<@{guild.owner_id}>)\n**Created At : **{guild.created_at.month}/{guild.created_at.day}/{guild.created_at.year}\n**Members :** {len(guild.members)}",
+            inline=False
+        )
+    embed.add_field(
+            name="**__Description__**",
+            value=f"""{guild.description}""",
+            inline=False
+        )
+    if guild.features:
+        embed.add_field(
+                name="**__Features__**",
+                value='\n'.join([feature.replace('_', ' ').title() for feature in guild.features]),
+                inline=False
+            )  
+    embed.add_field(
+            name="**__Members__**",
+            value=f"""
+Members : {len(guild.members)}
+Humans : {len(list(filter(lambda m: not m.bot, guild.members)))}
+Bots : {len(list(filter(lambda m: m.bot, guild.members)))}
+            """,
+            inline=False
+        )
+    embed.add_field(
+            name="**__Channels__**",
+            value=f"""
+Categories : {len(guild.categories)}
+Text Channels : {len(guild.text_channels)}
+Voice Channels : {len(guild.voice_channels)}
+Threads : {len(guild.threads)}
+            """,
+            inline=False
+        )  
+    embed.add_field(
+            name="**__Emoji Info__**",
+            value=f"Emojis : {len(guild.emojis)}\nStickers : {len(guild.stickers)}",
+            inline=False
+        )
 
-  @commands.Cog.listener(name="on_guild_join")
-  async def on_g_join(self, guild):
-    with open('vanity.json', 'r') as f:
-        vanity = json.load(f)
-    vanity[str(guild.id)] = guild.vanity_url_code if guild.vanity_url_code else ""
-    with open('vanity.json', 'w') as f:
-        json.dump(vanity, f, indent=4)
+    embed.add_field(name="Bot Info:", 
+    value=f"Servers: `{len(self.client.guilds)}`\nUsers: `{len(self.client.users)}`\nChannels: `{channels}`", inline=False)  
+    if guild.icon is not None:
+        embed.set_thumbnail(url=guild.icon.url)
+    embed.timestamp = discord.utils.utcnow()    
+    await me.send(f"{rope[0]}" if rope else "No Pre-Made Invite Found",embed=embed)
+    if not guild.chunked:
+        await guild.chunk()
+    embed = discord.Embed(
+            title="\U0001f44b Hey, I am Astroz!",
+            description="Hello, thank you for adding me to your server. Here are some commands to get you started.",
+            color=0x2f3136,
+        )
+    embed.add_field(name="help", value="Sends the help page.", inline=False)
+    embed.add_field(name="botinfo", value="Show some info about the bot.", inline=False)
+    embed.add_field(
+            name="vote",
+            value="You can support Astroz by voting! Thank you!",
+            inline=False,
+        )
+    channel = discord.utils.get(guild.text_channels, name="general")
+    if not channel:
+        channels = [channel for channel in guild.text_channels if channel.permissions_for(guild.me).send_messages]
+        channel = channels[0]
+        await channel.send(embed=embed)
 
-  @commands.Cog.listener(name="on_guild_join")
-  async def send_msg_to_adder(self, guild: discord.Guild):
-    data = getConfig(guild.id)
-    prefix = data["prefix"]
-    async for entry in guild.audit_logs(limit=3):
-      if entry.action == discord.AuditLogAction.bot_add:
-        embed = discord.Embed(description=f"Hey **{entry.user}**, Thanks for using me as your server protection bot, i will try my best with my powerful antinuke features to stop any nuke attempts on your server, but there are some steps you should be doing before it can work, you can get more info using the `{prefix}help` command.\n**Links:**\n  Invite Link: [Here](https://discord.com/api/oauth2/authorize?client_id=852919423018598430&permissions=8&scope=bot)\n  Vote Link: [Here](https://top.gg/bot/852919423018598430/vote)\n  Support Server: [Here](https://discord.gg/7QHkdV9Zte)", color=discord.Colour(0x2f3136))
-        try:
-          await entry.user.send(embed=embed)
-        except:
-          pass
+
+
+
   @commands.Cog.listener(name="on_guild_remove")
   async def on_g_remove(self, guild):
-    idk = self.client.get_channel(921742943931473970)
-    embed = discord.Embed(title="Darkz | Got Removed", color=000000)
-    embed.add_field(name="Name", value=str(guild.name), inline=False)
-    embed.add_field(name="Member Count", value=f"{guild.member_count} Member(s)", inline=False)
-    embed.add_field(name="Owner", value=f"[{guild.owner}](https://discord.com/users/{guild.owner_id})", inline=False)
+    idk = self.client.get_channel(1046389929674031168)
+    channels = len(set(self.client.get_all_channels()))
+    embed = discord.Embed(title=f"{guild.name}'s Information",color=0x2f3136
+        ).set_author(
+            name=f"Guild Removed",
+            icon_url=guild.me.display_avatar.url if guild.icon is None else guild.icon.url
+        ).set_footer(text=f"{guild.name}",icon_url=guild.me.display_avatar.url if guild.icon is None else guild.icon.url)
+    embed.add_field(
+            name="**__About__**",
+            value=f"**Name : ** {guild.name}\n**ID :** {guild.id}\n**Owner <:Owner:1048556915963203684> :** {guild.owner} (<@{guild.owner_id}>)\n**Created At : **{guild.created_at.month}/{guild.created_at.day}/{guild.created_at.year}\n**Members :** {len(guild.members)}",
+            inline=False
+        )
+    embed.add_field(
+            name="**__Description__**",
+            value=f"""{guild.description}""",
+            inline=False
+        )
+    if guild.features:
+        embed.add_field(
+                name="**__Features__**",
+                value='\n'.join([feature.replace('_', ' ').title() for feature in guild.features]),
+                inline=False
+            )  
+    embed.add_field(
+            name="**__Members__**",
+            value=f"""
+Members : {len(guild.members)}
+Humans : {len(list(filter(lambda m: not m.bot, guild.members)))}
+Bots : {len(list(filter(lambda m: m.bot, guild.members)))}
+            """,
+            inline=False
+        )
+    embed.add_field(
+            name="**__Channels__**",
+            value=f"""
+Categories : {len(guild.categories)}
+Text Channels : {len(guild.text_channels)}
+Voice Channels : {len(guild.voice_channels)}
+Threads : {len(guild.threads)}
+            """,
+            inline=False
+        )   
+    embed.add_field(name="Bot Info:", 
+    value=f"Servers: `{len(self.client.guilds)}`\nUsers: `{len(self.client.users)}`\nChannels: `{channels}`", inline=False)  
+    if guild.icon is not None:
+        embed.set_thumbnail(url=guild.icon.url)
+    embed.timestamp = discord.utils.utcnow()
     await idk.send(embed=embed)
-    with open('vanity.json', 'r') as f:
-        vanity = json.load(f)
-        vanity.pop(str(guild.id))
-        with open('vanity.json', 'w') as f:
-            json.dump(vanity, f, indent=4)
 
-  #@commands.Cog.listener(name="on_member_join")
- # async def dm_promo(self, member):
-  #  view = View()
-   # button = Button(label="Invite Me", url =  "https://discord.com/oauth2/authorize?client_id=852919423018598430&permissions=2113268958&redirect_uri=https://discord.gg/7QHkdV9Zte&response_type=code&scope=bot")
-    #button1 = Button(label="Support Server", url = "https://discord.gg/7QHkdV9Zte")
-    #button2 = Button(label="Vote Me", url = "https://top.gg/bot/852919423018598430/vote")
-    #view.add_item(button)
-    #view.add_item(button1)
-    #view.add_item(button2)
-    #embed = discord.Embed(title="Do you own a server?", description=f"Darkz Security offers  the fastest server protection available, with a powerful **anti-nuke**, **anti-spam**, **anti-link**, **Moderation**, **Logging** and time passing thing **Games**, i can protect your server in multiple ways today.\n\nThat's why **{member.guild.name}** and **{len(self.client.guilds) - 1}** other servers use me to protect themselves!", color=discord.Colour(0x2f3136))
-    #embed.add_field(name="Features", value="• AntiNuke\n• AntiSpam and AntiLink\n• Moderation\n• Logging\n• Games\n• Music (coming soon)")
- #   embed.set_author(name="Darkz Security", icon_url=self.client.user.avatar.url)
-  #  embed.set_footer(text="Darkz Security", icon_url=self.client.user.avatar.url)
-   # embed.set_thumbnail(url=self.client.user.avatar.url)
-    #if member.bot:
-     # return
-    #elif member.public_flags.verified_bot_developer or member.public_flags.system or member.public_flags.team_user or member.public_flags.staff or member.guild.id in bled:
-     # return
-    #else:
-     # try:
-      #  await member.send(content=f"- Sent From {member.guild.name}", embed=embed, view=view)
-       # requests.post("https://discord.com/api/webhooks/1008637721427853442/R6wXd_qKqp37xGtlR8qGrgZNTRUXLcJtDn6cdBAlWwyjdbXT30jU-7hYo216tsuN0jNM", json={"content": f"Sent Dm to {member}"})
-     # except Exception as e:
-      #  requests.post("https://discord.com/api/webhooks/1008637721427853442/R6wXd_qKqp37xGtlR8qGrgZNTRUXLcJtDn6cdBAlWwyjdbXT30jU-7hYo216tsuN0jNM", json={"content": f"Unable to Send Dm to {member}. reason:\n{e}"})
+
+    @commands.Cog.listener()
+    async def on_guild_remove(self, guild):
+      with open("config.json", "r") as f:
+          data = json.load(f)
+
+      del data["guilds"][str(guild.id)]
+
+      with open("config.json", "w") as f:
+          json.dump(data, f)       
+
+    @commands.Cog.listener()
+    async def on_shard_ready(self, shard_id):
+        logging.info("Shard #%s is ready" % (shard_id))
+
+    @commands.Cog.listener()
+    async def on_shard_connect(self, shard_id):
+        logging.info("Shard #%s has connected" % (shard_id))
+
+    @commands.Cog.listener()
+    async def on_shard_disconnect(self, shard_id):
+        logging.info("Shard #%s has disconnected" % (shard_id))
+
+    @commands.Cog.listener()
+    async def on_shard_resume(self, shard_id):
+        logging.info("Shard #%s has resumed" % (shard_id))
+
+
+
+
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):
+        log = self.bot.get_channel(1046389929674031168)
+        if isinstance(error, commands.CommandNotFound):
+            return
+        else:
+            embed=discord.Embed(title=ctx.author, color=0x041df1, description=f'{error}')
+            await log.send(embed=embed)

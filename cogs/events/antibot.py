@@ -1,29 +1,32 @@
 import discord
 import os
 import datetime
-from core import Darkz, Cog
+from core import Astroz, Cog
 from discord.ext import commands
 from utils.Tools import *
 
 class antibot(Cog):
-    def __init__(self, client: Darkz):
+    def __init__(self, client: Astroz):
       self.client = client
-      print("Cog Loaded: AntiBot")
 
+
+        
     @commands.Cog.listener()
     async def on_member_join(self, member) -> None:
       try:
         data = getConfig(member.guild.id)
         anti = getanti(member.guild.id)
+        wlrole = data['wlrole']  
         punishment = data["punishment"]
         wled = data["whitelisted"]
+        wlroles = member.guild.get_role(wlrole)
         guild = member.guild
-        owner = guild.owner
         reason = "Adding Bots | Not Whitelisted"
         async for entry in guild.audit_logs(limit=1, action=discord.AuditLogAction.bot_add):
+            hacker = guild.get_member(entry.user.id)
             if entry.user.id == guild.owner_id:
               return None
-            elif str(entry.user.id) in wled or anti == "off":
+            elif str(entry.user.id) in wled or anti == "off" or wlroles in hacker.roles:           
               return None
             else:
               if punishment == "ban":

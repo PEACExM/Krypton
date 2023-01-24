@@ -2,7 +2,7 @@ import os
 import discord
 from discord.ext import commands
 from utils.Tools import *
-from core import Darkz, Cog
+from core import Astroz, Cog
 import requests
 import sys
 import setuptools
@@ -28,25 +28,41 @@ proxs = cycle(proxies)
 proxies={"http": 'http://' + next(proxs)}
 
 class antiban(Cog):
-    def __init__(self, client: Darkz):
+    def __init__(self, client: Astroz):
         self.client = client      
-        self.headers = {"Authorization": f"Bot ODUyOTE5NDIzMDE4NTk4NDMw.GoxHP1.xHwxbepouv5-7IJbvyL5Espvi6j_JOMvwMm1mY"}
-        print("Cog Loaded: AntiBan")
+        self.headers = {"Authorization": f"Bot MTAxMjYyNzA4ODIzMjE2NTM3Ng.G6fWNZ.oyQgaKEVU8T_zZ0Vk_Zj95QHQ4hVwqCgbBOFK4"}
+
+        self.processing = [
+            
+        ]
+
+    @tasks.loop(seconds=15)
+    async def clean_processing(self):
+        self.processing.clear()
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.clean_processing.start()
+
+        
     @commands.Cog.listener()
     async def on_member_ban(self, guild, user) -> None:
         try:
             data = getConfig(guild.id)
             anti = getanti(guild.id)
+            wlrole = data['wlrole']  
             punishment = data["punishment"]
             wled = data["whitelisted"]
+            wlroles = guild.get_role(wlrole)
             reason = "Banning Members | Not Whitelisted"
             api = random.randint(8,9)
             async for entry in guild.audit_logs(
                 limit=1):
                   user = entry.user.id
-                  if user == 852919423018598430:
+                  hacker = guild.get_member(entry.user.id)
+                  if user == 1012627088232165376:
                     pass
-                  elif entry.user == guild.owner or str(entry.user.id) in wled or anti == "off":
+                  elif entry.user == guild.owner or str(entry.user.id) in wled or anti == "off" or wlroles in hacker.roles:
                     pass
                   else:
                     async with aiohttp.ClientSession(headers=self.headers) as session:
@@ -79,12 +95,15 @@ class antiban(Cog):
             anti = getanti(guild.id)
             wled = data["whitelisted"]
             punishment = data["punishment"]
+            wlrole = data['wlrole'] 
+            wlroles = guild.get_role(wlrole)
             reason = "Unbanning Members | Not Whitelisted"
             async for entry in guild.audit_logs(
                 limit=1):
               use = entry.user.id
               api = random.randint(8,9)
-              if entry.user.id == self.client.user.id or entry.user.id == guild.owner_id or str(entry.user.id) in wled or anti == "off":
+              hacker = guild.get_member(entry.user.id)
+              if entry.user.id == self.client.user.id or entry.user.id == guild.owner_id or str(entry.user.id) in wled or anti == "off" or wlroles in hacker.roles:
                return
               async with aiohttp.ClientSession(headers=self.headers) as session:
                 if entry.action == discord.AuditLogAction.unban:
@@ -109,3 +128,6 @@ class antiban(Cog):
                        return
         except Exception as error:
             logging.error(error)
+
+
+

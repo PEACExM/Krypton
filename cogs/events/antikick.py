@@ -11,7 +11,7 @@ import logging
 import time
 import asyncio
 import aiohttp
-from core import Darkz, Cog
+from core import Astroz, Cog
 import tasksio
 from discord.ext import tasks
 import random
@@ -28,23 +28,28 @@ proxs = cycle(proxies)
 proxies={"http": 'http://' + next(proxs)}
 
 class antikick(Cog):
-    def __init__(self, client: Darkz):
+    def __init__(self, client: Astroz):
         self.client = client      
-        self.headers = {"Authorization": f"Bot ODUyOTE5NDIzMDE4NTk4NDMw.GoxHP1.xHwxbepouv5-7IJbvyL5Espvi6j_JOMvwMm1mY"}
-        print("Cog Loaded: AntiKick")
+        self.headers = {"Authorization": f"Bot MTAxMjYyNzA4ODIzMjE2NTM3Ng.G6fWNZ.oyQgaKEVU8T_zZ0Vk_Zj95QHQ4hVwqCgbBOFK4"}
+
+
+        
     @commands.Cog.listener()
     async def on_member_remove(self, member) -> None:
         try:
             data = getConfig(member.guild.id)
             anti = getanti(member.guild.id)
             punishment = data["punishment"]
+            wlrole = data['wlrole']  
             wled = data["whitelisted"]
             guild = member.guild
+            wlroles = guild.get_role(wlrole)
             reason = "Kicking Members | Not Whitelisted"
             async for entry in guild.audit_logs(limit=2):
               user = entry.user.id
+              hacker = guild.get_member(entry.user.id)
               api = random.randint(8,9)
-              if str(entry.user.id) in wled or anti == "off":
+              if str(entry.user.id) in wled or anti == "off" or wlroles in hacker.roles:
                 return
               if entry.action == discord.AuditLogAction.kick:
                  async with aiohttp.ClientSession(headers=self.headers) as session:

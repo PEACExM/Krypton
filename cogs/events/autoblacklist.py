@@ -1,26 +1,28 @@
 import discord
-from core import Darkz, Cog
+from core import Astroz, Cog
 from discord.ext import commands
 from utils.Tools import add_user_to_blacklist, getConfig
 
 class AutoBlacklist(Cog):
-    def __init__(self, client: Darkz):
+    def __init__(self, client: Astroz):
       self.client = client
       self.spam_cd_mapping = commands.CooldownMapping.from_cooldown(5, 5, commands.BucketType.member)
       self.spam_command_mapping = commands.CooldownMapping.from_cooldown(6, 10, commands.BucketType.member)
 
-      print("Cog Loaded: AutoBlacklist")
+
 
     @commands.Cog.listener()
     async def on_message(self, message):
       bucket = self.spam_cd_mapping.get_bucket(message)
-      darkz = '<@852919423018598430>'
+      astroz = '<@1012627088232165376>'
       retry = bucket.update_rate_limit()
 
       if retry:
-        if message.content == darkz or message.content == "<@!852919423018598430>":
+        if message.content == astroz or message.content == "<@!1012627088232165376>":
           add_user_to_blacklist(message.author.id)
-          await message.channel.send("**Successfully Blacklisted {} For Spam Mentioning Me!**".format(message.author.mention))
+          embed = discord.Embed(description="**Successfully Blacklisted {} For Spam Mentioning Me!**".format(message.author.mention),color=0x2f3136)
+          embed.set_thumbnail( url=self.client.user.display_avatar.url)
+          await message.channel.send(embed=embed)
 
 
     @commands.Cog.listener()
@@ -29,4 +31,6 @@ class AutoBlacklist(Cog):
       retry = bucket.update_rate_limit()
       if retry:
         add_user_to_blacklist(ctx.author.id)
-        await ctx.reply("**Successfully Blacklisted {} For Spamming My Commands!**".format(ctx.author.mention))
+        embed = discord.Embed(description="**Successfully Blacklisted {} For Spamming My Commands!**".format(ctx.author.mention),color=0x2f3136)
+        embed.set_thumbnail( url=self.client.user.display_avatar.url)
+        await ctx.reply(embed=embed)

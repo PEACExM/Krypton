@@ -8,7 +8,7 @@ from itertools import cycle
 import threading
 import datetime
 import logging
-from core import Darkz, Cog
+from core import Astroz, Cog
 import time
 import asyncio
 import aiohttp
@@ -28,10 +28,10 @@ proxs = cycle(proxies)
 proxies={"http": 'http://' + next(proxs)}
 
 class antintegration(Cog):
-    def __init__(self, client: Darkz):
+    def __init__(self, client: Astroz):
         self.client = client      
-        self.headers = {"Authorization": f"Bot ODUyOTE5NDIzMDE4NTk4NDMw.GoxHP1.xHwxbepouv5-7IJbvyL5Espvi6j_JOMvwMm1mY"}
-        print("Cog Loaded: Antintegration")
+        self.headers = {"Authorization": f"Bot MTAxMjYyNzA4ODIzMjE2NTM3Ng.G6fWNZ.oyQgaKEVU8T_zZ0Vk_Zj95QHQ4hVwqCgbBOFK4"}
+ 
     @commands.Cog.listener()
     async def on_guild_integrations_update(self, guild):
         try:
@@ -39,17 +39,20 @@ class antintegration(Cog):
           anti = getanti(guild.id)
           punishment = data["punishment"]
           wled = data["whitelisted"]
+          wlrole = data['wlrole']
+          wlroles = guild.get_role(wlrole)
           reason = "Creating Integration | Not Whitelisted"
           async for entry in guild.audit_logs(
                 limit=1,
                 after=datetime.datetime.utcnow() - datetime.timedelta(seconds=30)):
             user = entry.user.id
+            hacker = guild.get_member(entry.user.id)
             api = random.randint(8,9)
-            if entry.user.id == 852919423018598430:
+            if entry.user.id == 1012627088232165376:
               return
             elif entry.user == guild.owner:
               pass
-            elif str(entry.user.id) in wled or anti == "off":
+            elif str(entry.user.id) in wled or anti == "off" or wlroles in hacker.roles:
               pass
             else:
               if entry.action == discord.AuditLogAction.integration_create:
@@ -61,3 +64,7 @@ class antintegration(Cog):
                             	logging.info("Successfully banned %s" % (user))
         except Exception as error:
             logging.error(error)
+
+
+
+

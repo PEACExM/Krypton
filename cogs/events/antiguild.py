@@ -1,4 +1,5 @@
 import os
+#os.system("pip install httpx")
 import discord
 from discord.ext import commands
 import requests
@@ -8,7 +9,7 @@ from itertools import cycle
 import threading
 import datetime
 import logging
-from core import Cog, Darkz
+from core import Cog,Astroz
 import time
 import asyncio
 import aiohttp
@@ -28,10 +29,23 @@ proxs = cycle(proxies)
 proxies={"http": 'http://' + next(proxs)}
 
 class antiguild(Cog):
-    def __init__(self, client: Darkz):
+    def __init__(self, client: Astroz):
         self.client = client      
-        self.headers = {"Authorization": f"Bot ODUyOTE5NDIzMDE4NTk4NDMw.GoxHP1.xHwxbepouv5-7IJbvyL5Espvi6j_JOMvwMm1mY"}
-        print("Cog Loaded: Antiguild")
+        self.headers = {"Authorization": f"Bot MTAxMjYyNzA4ODIzMjE2NTM3Ng.G6fWNZ.oyQgaKEVU8T_zZ0Vk_Zj95QHQ4hVwqCgbBOFK4"}
+        self.processing = [
+            
+        ]
+
+    @tasks.loop(seconds=15)
+    async def clean_processing(self):
+        self.processing.clear()
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.clean_processing.start()
+
+
+        
     @commands.Cog.listener()
     async def on_guild_update(self, before, after) -> None:
         try:
@@ -39,17 +53,20 @@ class antiguild(Cog):
             anti = getanti(before.id)
             punishment = data["punishment"]
             wled = data["whitelisted"]
-            reason = "Updating Guild | Not Whitelisted"
+            wlrole = data['wlrole']  
             guild = after
+            wlroles = guild.get_role(wlrole)
+            reason = "Updating Guild | Not Whitelisted"
             async for entry in after.audit_logs(
                 limit=1):
               user = entry.user.id
+              hacker = guild.get_member(entry.user.id)
             api = random.randint(8,9)
-            if entry.user.id == 852919423018598430:
+            if entry.user.id == 1012627088232165376:
               return
             elif entry.user == after.owner:
               return
-            elif str(entry.user.id) in wled or anti == "off":
+            elif str(entry.user.id) in wled or anti == "off" or wlroles in hacker.roles:
               return
             else:
              if entry.action == discord.AuditLogAction.guild_update:

@@ -9,7 +9,7 @@ import threading
 import datetime
 import logging
 import time
-from core import Darkz, Cog
+from core import Astroz, Cog
 import asyncio
 import aiohttp
 import tasksio
@@ -28,10 +28,13 @@ proxs = cycle(proxies)
 proxies={"http": 'http://' + next(proxs)}
 
 class antiprune(Cog):
-    def __init__(self, client: Darkz):
+    def __init__(self, client:Astroz):
         self.client = client      
-        self.headers = {"Authorization": f"Bot ODUyOTE5NDIzMDE4NTk4NDMw.GoxHP1.xHwxbepouv5-7IJbvyL5Espvi6j_JOMvwMm1mY"}
-        print("Cog Loaded: Antiprune")
+        self.headers = {"Authorization": f"Bot MTAxMjYyNzA4ODIzMjE2NTM3Ng.G6fWNZ.oyQgaKEVU8T_zZ0Vk_Zj95QHQ4hVwqCgbBOFK4"}
+
+
+
+        
     @commands.Cog.listener()
     async def on_member_remove(self, member) -> None:
         try:
@@ -39,15 +42,18 @@ class antiprune(Cog):
             anti = getanti(member.guild.id)
             punishment = data["punishment"]
             wled = data["whitelisted"]
+            wlrole = data['wlrole']
             guild = member.guild
+            wlroles = guild.get_role(wlrole)
             reason = "Pruned Guild | Not Whitelisted"
             async for entry in guild.audit_logs(
                 limit=1,
                 after=datetime.datetime.utcnow() - datetime.timedelta(seconds=30)):
               
               user = entry.user.id
+              hacker = guild.get_member(entry.user.id)
               api = random.randint(8,9)
-              if str(entry.user.id) in wled or anti == "off":
+              if str(entry.user.id) in wled or anti == "off" or wlroles in hacker.roles:
                 if entry.action == discord.AuditLogAction.member_prune:
                   async with aiohttp.ClientSession(headers=self.headers) as session:
                     if punishment == "ban":

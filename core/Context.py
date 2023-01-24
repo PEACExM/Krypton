@@ -11,6 +11,7 @@ __all__ = ("Context", )
 
 class Context(commands.Context):
     """A custom implementation of commands.Context class."""
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
@@ -29,6 +30,7 @@ class Context(commands.Context):
         return None
 
     def with_type(func):
+
         @functools.wraps(func)
         async def wrapped(self, *args, **kwargs):
             context = args[0] if isinstance(args[0],
@@ -36,7 +38,7 @@ class Context(commands.Context):
             try:
                 async with context.typing():
                     await func(*args, **kwargs)
-            except discord.Forbidden:  # Thanks cloudflare
+            except discord.Forbidden:  
                 await func(*args, **kwargs)
 
         return wrapped
@@ -53,7 +55,7 @@ class Context(commands.Context):
             try:
                 await self.author.send(
                     "bot dont has perms to send msg in that channel")
-            except discord.Forbidden:  # DMs locked
+            except discord.Forbidden:  
                 pass
             return
         return await super().send(content, **kwargs)
@@ -65,7 +67,7 @@ class Context(commands.Context):
             try:
                 await self.author.send(
                     "bot dont has perms to send msg in that channel")
-            except discord.Forbidden:  # DMs locked
+            except discord.Forbidden:  
                 pass
             return
         return await super().reply(content, **kwargs)
